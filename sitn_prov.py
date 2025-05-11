@@ -17,6 +17,8 @@ class SITNProv:
             return self.decorate_select(*args, **kwargs)
         elif method_name == "dropna":
             return self.decorate_dropna(*args, **kwargs)
+        elif method_name == "append":
+            return self.decorate_append(*args, **kwargs)
         else:
             raise NotImplementedError(f"Decoration for '{method_name}' is not implemented.")
         
@@ -95,25 +97,53 @@ class SITNProv:
         merged_df.drop(columns=["_left_index", "_right_index"], inplace=True, errors="ignore")
         
         return merged_df, T
-    
-    def decorate_identity(self, df, to_replace, value):
+
+    def decorate_append(self, df1, df2, **kwargs):
         """
-        Modifies the replace operation by tracking provenance.
-        
-        - The operation uses `df.replace(to_replace, value)` to replace values.
-        - The provenance tensor is a binary matrix of shape (m, n) where each row corresponds
-          to an output row and has a 1 at the column corresponding to its original row position.
+        Modifie l'opération d'append (concaténation verticale) en traçant la provenance.
+
+        - df1 : premier DataFrame
+        - df2 : second DataFrame
+
+        Retourne :
+        - df_merged : résultat de pd.concat([df1, df2])
+        - T1 : tenseur de provenance (m, n1) pour df1
+        - T2 : tenseur de provenance (m, n2) pour df2
         """
-        # Perform replacement using DataFrame.replace
-        replaced_df = self.func(df, to_replace, value)
+        df1 = df1.copy()
+        df2 = df2.copy()
+
+        n1 = len(df1)
+        n2 = len(df2)
+        m = n1 + n2
+
+        # Concaténation réelle
+        df_merged = pd.concat([df1, df2], ignore_index=True)
+
+        # Tenseur T1 : (m x n1), haut = identité, bas = 0
+        T1 = np.zeros((m, n1), dtype=int)
+        T1[:n1, :n1] = np.eye(n1, dtype=int)
+
+        # Tenseur T2 : (m x n2), haut = 0, bas = identité
+        T2 = np.zeros((m, n2), dtype=int)
+        T2[n1:, :n2] = np.eye(n2, dtype=int)
+
+        return df_merged, T1, T2
+
+    def decorate_identity(self, df, to_replace, value=None):
+        """
+        Modifie l'opération replace en tenant compte du format de to_replace.
+        """
+        # Cas où to_replace est un dict complexe (dict de dicts ou dict de colonnes)
+        if isinstance(to_replace, dict) and value is None:
+            replaced_df = self.func(df, to_replace)
+        else:
+            replaced_df = self.func(df, to_replace, value)
 
         n = len(df)
 
-
-        # since replace operation maintains row correspondence
         T = np.identity(n, dtype=int)
 
-        # If indexes might be different or reordered, this ensures correct mapping
         if not np.array_equal(replaced_df.index, df.index):
             idx_map = np.array([df.index.get_loc(i) for i in replaced_df.index])
             T = T[idx_map]

@@ -100,7 +100,7 @@ def main(opt):
     
     print(f"\nProvenance Query Example:")
     print(f"Output record at index {output_idx} (selected columns):")
-    selected_cols = ['duration', 'amount', 'gender', 'label']
+    selected_cols = ['duration', 'credit_amount', 'gender', 'label']
     print(df.iloc[output_idx][selected_cols])
     print(f"\nCame from original record at index {original_indices}:")
     original_df = pd.read_csv(input_path, header=0)
