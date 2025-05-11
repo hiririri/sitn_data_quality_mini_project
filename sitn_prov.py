@@ -167,8 +167,6 @@ class SITNProv:
         
         return dropped_df, prov_tensor
     
-    # Add these new methods for provenance querying
-    
     def trace_output_to_input(self, tensor, output_indices):
         """
         Traces output records back to their contributing input records.
