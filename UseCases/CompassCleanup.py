@@ -123,15 +123,6 @@ def main(opt):
         print(f"\nInput record at index {input_idx} did not contribute to any output records")
     print(f"Query execution time: {query_time:.4f} seconds")
     
-    # Visualize tensor sizes
-    plt.figure(figsize=(10, 6))
-    plt.bar(range(len(tensor_sizes)), [size/(1024*1024) for size in tensor_sizes])
-    plt.xlabel('Operation')
-    plt.ylabel('Tensor Size (MB)')
-    plt.title('Provenance Tensor Storage Requirements')
-    plt.xticks(range(len(tensor_sizes)), [f'Op {i}' for i in range(len(tensor_sizes))])
-    plt.savefig('compass_tensor_sizes.png')
-    
     print("\nPipeline execution completed successfully.")
 
 if __name__ == '__main__':

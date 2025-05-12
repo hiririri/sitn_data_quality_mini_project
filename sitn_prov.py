@@ -278,31 +278,7 @@ class SITNProv:
             return sorted(list(set(output_indices)))
         else:
             raise ValueError(f"Unsupported tensor dimension: {tensor.ndim}")
-    
-    def compose_provenance(self, tensor1, tensor2):
-        """
-        Composes two provenance tensors to track provenance through a pipeline of operations.
-        
-        Args:
-            tensor1: The provenance tensor from the first operation
-            tensor2: The provenance tensor from the second operation
-            
-        Returns:
-            A composed tensor that directly maps from original inputs to final outputs
-        """
-        # Handle different tensor dimensions based on operation types
-        if tensor1.ndim == 2 and tensor2.ndim == 2:
-            # For two 2D tensors (e.g., filter followed by select)
-            # Matrix multiplication gives us the composed mapping
-            return np.matmul(tensor2, tensor1)
-            
-        # Add more cases for different combinations of operations
-        # This is a simplified version - you may need more complex logic
-        # for operations like merge that have 3D tensors
-        
-        else:
-            raise NotImplementedError("Composition not implemented for these tensor types")
-    
+
     def trace_through_pipeline(self, tensors, output_indices, direction='backward'):
         """
         Traces records through a pipeline of operations.
